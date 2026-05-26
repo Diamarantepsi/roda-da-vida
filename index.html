@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roda da Vida</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+/* ==============================================
+   VARIÁVEIS E RESET
+   ============================================== */
+:root {
+  --verde:       #2f5d3f;
+  --verde-m:     #4a7c5a;
+  --verde-c:     #7ba889;
+  --verde-bg:    #e8f0ea;
+  --verde-suave: #f4f8f5;
+  --texto:       #1f2d24;
+  --texto-m:     #4a5d50;
+  --borda:       #c6d6cb;
+  --branco:      #ffffff;
+  --erro:        #b04545;
+  --sombra:      0 2px 10px rgba(47,93,63,.10);
+
+  /* Cores das 8 áreas */
+  --c1: #3b82f6; /* Saúde física     */
+  --c2: #8b5cf6; /* Saúde emocional  */
+  --c3: #ec4899; /* Família          */
+  --c4: #f43f5e; /* Amor             */
+  --c5: #f59e0b; /* Amizades         */
+  --c6: #10b981; /* Trabalho         */
+  --c7: #06b6d4; /* Finanças         */
+  --c8: #6366f1; /* Lazer            */
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--verde-suave);
+  color: var(--texto);
+  font-size: 16px;
+  line-height: 1.55;
+  min-height: 100vh;
+}
+
+.oculto { display: none !important; }
+
+/* ==============================================
+   LAYOUT PRINCIPAL
+   ============================================== */
+.pagina {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 28px 20px 80px;
+}
+
+.topo {
+  border-bottom: 2px solid var(--verde-m);
+  padding-bottom: 14px;
+  margin-bottom: 24px;
+}
+
+.topo h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--verde);
+  margin-bottom: 2px;
+}
+
+.topo .sub {
+  font-size: 13px;
+  color: var(--texto-m);
+}
+
+/* ==============================================
+   PAINEL TERAPEUTA
+   ============================================== */
+#painel-terapeuta {
+  background: #fffbeb;
+  border-bottom: 3px solid #f59e0b;
+  padding: 24px 20px;
+}
+
+.aviso-terapeuta {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: #92400e;
+  line-height: 1.5;
+}
+
+.badge-terapeuta {
+  background: #f59e0b;
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.cartao {
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--sombra);
+}
+
+.cartao h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--verde);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--verde-bg);
+}
+
+.campo label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-m);
+  margin-bottom: 5px;
+}
+
+.campo { margin-bottom: 12px; }
+
+.campo input[type="text"],
+.campo input[type="email"],
+.campo input[type="url"],
+.campo input[type="number"],
+.campo textarea,
+.campo select {
+  width: 100%;
+  padding: 8px 11px;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--branco);
+  color: var(--texto);
+  transition: border-color .15s;
+}
+
+.campo input:focus,
+.campo textarea:focus {
+  outline: none;
+  border-color: var(--verde-m);
+  box-shadow: 0 0 0 3px rgba(74,124,90,.15);
+}
+
+.campo textarea { min-height: 72px; resize: vertical; }
+
+.linha-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 520px) { .linha-2 { grid-template-columns: 1fr; } }
+
+/* Áreas config */
+.area-cfg {
+  background: var(--verde-suave);
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.area-cfg-topo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.area-cfg-num {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--verde);
+  min-width: 22px;
+}
+
+.area-cfg input[type="color"] {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.area-cfg input[type="text"] {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  background: white;
+}
+
+.area-cfg input[type="text"]:focus { outline: none; border-color: var(--verde-m); }
+
+.area-cfg textarea {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: none;
+  min-height: 52px;
+  background: white;
+}
+
+.area-cfg textarea:focus { outline: none; border-color: var(--verde-m); }
+
+/* Botões */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  transition: all .15s;
+  text-decoration: none;
+}
+
+.btn-verde      { background: var(--verde-m); color: white; }
+.btn-verde:hover:not(:disabled) { background: var(--verde); }
+
+.btn-outline    { background: transparent; color: var(--verde-m); border: 1.5px solid var(--verde-m); }
+.btn-outline:hover { background: var(--verde-bg); }
+
+.btn-ghost      { background: transparent; color: var(--texto-m); border: 1.5px solid var(--borda); }
+.btn-ghost:hover { background: var(--borda); color: var(--texto); }
+
+.btn-perigo     { background: #fef2f2; color: var(--erro); border: 1px solid #fecaca; font-size: 12px; padding: 5px 10px; }
+.btn-perigo:hover { background: #fee2e2; }
+
+.btn-sm         { padding: 6px 14px; font-size: 13px; }
+.btn:disabled   { opacity: .45; cursor: not-allowed; }
+
+.acoes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+#link-gerado {
+  display: none;
+  background: var(--verde-bg);
+  border: 1px solid var(--verde-c);
+  border-radius: 6px;
+  padding: 14px;
+  margin: 14px 0;
+}
+
+#link-gerado strong { display: block; color: var(--verde); margin-bottom: 8px; font-size: 13px; }
+#link-url { word-break: break-all; font-family: 'SF Mono', Consolas, monospace; font-size: 12px; }
+#link-gerado .acoes { margin-top: 10px; }
+
+.feedback {
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin: 8px 0;
+}
+.feedback.ok  { background: var(--verde-bg); color: var(--verde); border-left: 3px solid var(--verde-m); }
+.feedback.err { background: #fef2f2; color: var(--erro); border-left: 3px solid var(--erro); }
+
+/* ==============================================
+   MODO CLIENTE — FORMULÁRIO
+   ============================================== */
+.instrucoes-box {
+  background: var(--verde-bg);
+  border-left: 4px solid var(--verde-m);
+  border-radius: 0 8px 8px 0;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--texto-m);
+}
+
+.nome-box {
+  background: white;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--sombra);
+}
+
+.nome-box label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto);
+  white-space: nowrap;
+}
+
+.nome-box input {
+  flex: 1;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--texto);
+}
+
+.nome-box input:focus { outline: none; border-color: var(--verde-m); }
+
+/* Card de cada área */
+.area-card {
+  background: var(--branco);
+  border: 1.5px solid var(--borda);
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+  box-shadow: var(--sombra);
+  transition: border-color .2s;
+}
+
+.area-card.respondida { border-color: var(--verde-c); }
+
+.area-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.area-icone {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.area-nome {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.area-desc {
+  font-size: 13.5px;
+  color: var(--texto-m);
+  margin-bottom: 14px;
+  line-height: 1.55;
+}
+
+/* Grade de botões 0–10 */
+.escala-grade {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  gap: 5px;
+  margin-bottom: 6px;
+}
+
+@media (max-width: 520px) {
+  .escala-grade {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.num-btn {
+  aspect-ratio: 1;
+  border: 1.5px solid var(--borda);
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  background: white;
+  color: var(--texto);
+  transition: all .12s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.num-btn:hover { transform: scale(1.08); }
+
+.num-btn.ativo {
+  color: white !important;
+  border-color: transparent !important;
+  transform: scale(1.12);
+  box-shadow: 0 3px 10px rgba(0,0,0,.18);
+}
+
+.escala-rotulos {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+/* Campo reflexão */
+.reflexao-card {
+  background: var(--branco);
+  border: 1.5px solid var(--borda);
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--sombra);
+}
+
+.reflexao-card label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto);
+  margin-bottom: 10px;
+}
+
+.reflexao-card textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 10px 12px;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--texto);
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.reflexao-card textarea:focus {
+  outline: none;
+  border-color: var(--verde-m);
+  box-shadow: 0 0 0 3px rgba(74,124,90,.12);
+}
+
+.contador-respondidas {
+  font-size: 13px;
+  color: var(--texto-m);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.contador-respondidas .progresso-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--borda);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.contador-respondidas .progresso-fill {
+  height: 100%;
+  background: var(--verde-m);
+  border-radius: 99px;
+  transition: width .3s ease;
+}
+
+.btn-gerar-roda {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  border-radius: 8px;
+  margin-top: 4px;
+}
+
+/* ==============================================
+   MODO CLIENTE — RESULTADO
+   ============================================== */
+#tela-resultado .topo h1 { font-size: 20px; }
+
+.grafico-container {
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--sombra);
+  display: flex;
+  justify-content: center;
+}
+
+.grafico-container canvas {
+  max-width: 480px;
+  width: 100%;
+}
+
+/* Tabela de notas */
+.tabela-notas {
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: var(--sombra);
+}
+
+.tabela-notas table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tabela-notas thead th {
+  background: var(--verde-bg);
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--verde);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.tabela-notas thead th:last-child { text-align: right; }
+
+.tabela-notas tbody td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--verde-bg);
+  color: var(--texto);
+}
+
+.tabela-notas tbody tr:last-child td { border-bottom: none; }
+
+.tabela-notas tbody td:last-child { text-align: right; }
+
+.tabela-notas tfoot td {
+  padding: 11px 14px;
+  border-top: 2px solid var(--verde-c);
+  font-weight: 700;
+  color: var(--verde);
+}
+
+.tabela-notas tfoot td:last-child { text-align: right; }
+
+.dot-area {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.pill {
+  display: inline-block;
+  padding: 2px 11px;
+  border-radius: 99px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* Barra de nível */
+.barra-nivel {
+  display: inline-block;
+  height: 6px;
+  border-radius: 99px;
+  vertical-align: middle;
+  margin-left: 8px;
+  transition: width .4s;
+}
+
+/* Reflexão resultado */
+.reflexao-resultado {
+  background: var(--verde-bg);
+  border-left: 4px solid var(--verde-m);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+}
+
+.reflexao-resultado h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--verde);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 8px;
+}
+
+.reflexao-resultado p {
+  font-size: 14px;
+  color: var(--texto-m);
+  white-space: pre-wrap;
+  line-height: 1.65;
+}
+
+/* Observação escrita pelo paciente */
+.obs-paciente {
+  background: white;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  box-shadow: var(--sombra);
+}
+
+.obs-paciente h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--texto-m);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 8px;
+}
+
+.obs-paciente p {
+  font-size: 14px;
+  color: var(--texto);
+  white-space: pre-wrap;
+  line-height: 1.65;
+}
+
+footer.rodape {
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--borda);
+  font-size: 12px;
+  color: var(--texto-m);
+  text-align: center;
+}
+
+/* ==============================================
+   IMPRESSÃO
+   ============================================== */
+@media print {
+  body { background: white; font-size: 13px; }
+  #painel-terapeuta,
+  .nao-imprimir,
+  .nome-box { display: none !important; }
+  .pagina { padding: 0; }
+  .topo { border-bottom: 1px solid #ccc; }
+  .grafico-container,
+  .tabela-notas,
+  .cartao,
+  .area-card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    break-inside: avoid;
+  }
+  .btn-gerar-roda, .acoes { display: none !important; }
+}
+
+@media (max-width: 480px) {
+  .pagina { padding: 16px 14px 60px; }
+  .nome-box { flex-direction: column; align-items: flex-start; }
+  .nome-box input { width: 100%; }
+  .num-btn { font-size: 13px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ================================================
+     PAINEL TERAPEUTA  (?terapeuta na URL)
+     ================================================ -->
+<div id="painel-terapeuta" class="oculto">
+<div class="pagina">
+
+  <header class="topo">
+    <h1>⚙️ Configurações — Roda da Vida</h1>
+    <div class="sub">Modo terapeuta. Pacientes não têm acesso a esta área.</div>
+  </header>
+
+  <div class="aviso-terapeuta">
+    <span class="badge-terapeuta">Terapeuta</span>
+    <span>
+      Esta área aparece <strong>apenas quando você adiciona <code>?terapeuta</code> na URL</strong>.
+      Configure e clique em "Gerar link" para enviar ao paciente — o link gerado abre direto no formulário de preenchimento, sem mostrar esta tela.
+    </span>
+  </div>
+
+  <!-- 1. Identificação -->
+  <div class="cartao">
+    <h2>1. Título e instruções</h2>
+    <div class="campo">
+      <label>Título do instrumento</label>
+      <input type="text" id="cfg-titulo" value="Roda da Vida">
+    </div>
+    <div class="campo">
+      <label>Instruções para o paciente</label>
+      <textarea id="cfg-instrucoes" rows="4">Avalie, no momento atual, seu grau de satisfação em cada uma das áreas listadas abaixo, atribuindo uma nota de 0 a 10. O número 0 representa total insatisfação e o número 10 representa plena satisfação. Não há respostas certas ou erradas — o importante é a sua percepção honesta sobre como você se sente hoje em relação a cada área da sua vida.</textarea>
+    </div>
+  </div>
+
+  <!-- 2. Escala -->
+  <div class="cartao">
+    <h2>2. Escala de avaliação</h2>
+    <div class="linha-2">
+      <div class="campo">
+        <label>Valor mínimo</label>
+        <input type="number" id="cfg-min" value="0" min="0" max="9">
+      </div>
+      <div class="campo">
+        <label>Valor máximo</label>
+        <input type="number" id="cfg-max" value="10" min="1" max="10">
+      </div>
+    </div>
+    <div class="linha-2">
+      <div class="campo">
+        <label>Rótulo do mínimo</label>
+        <input type="text" id="cfg-rot-min" value="Totalmente insatisfeito">
+      </div>
+      <div class="campo">
+        <label>Rótulo do máximo</label>
+        <input type="text" id="cfg-rot-max" value="Plenamente satisfeito">
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Áreas -->
+  <div class="cartao">
+    <h2>3. Áreas avaliadas</h2>
+    <p style="font-size:13px;color:var(--texto-m);margin-bottom:14px;">
+      Edite os nomes e as descrições de cada área. A descrição aparece como orientação para o paciente.
+    </p>
+    <div id="cfg-areas"></div>
+    <button class="btn btn-outline btn-sm" onclick="addAreaCfg()" style="margin-top:4px;">+ Adicionar área</button>
+  </div>
+
+  <!-- 4. Reflexão final -->
+  <div class="cartao">
+    <h2>4. Pergunta reflexiva final <span style="font-weight:400;color:var(--texto-m)">(opcional)</span></h2>
+    <p style="font-size:13px;color:var(--texto-m);margin-bottom:10px;">
+      Espaço aberto para o paciente registrar uma observação ao final — útil para debate na sessão.
+    </p>
+    <div class="campo">
+      <label>Texto da pergunta (deixe em branco para ocultar)</label>
+      <input type="text" id="cfg-reflexao" value="Ao observar sua Roda da Vida, o que mais chama sua atenção? Há alguma área que você gostaria de comentar?">
+    </div>
+  </div>
+
+  <!-- 5. E-mail (Formspree) -->
+  <div class="cartao">
+    <h2>5. Receber resultado por e-mail <span style="font-weight:400;color:var(--texto-m)">(opcional)</span></h2>
+    <p style="font-size:13px;color:var(--texto-m);margin-bottom:12px;">
+      Para receber automaticamente o resultado preenchido, crie uma conta gratuita em
+      <a href="https://formspree.io" target="_blank" style="color:var(--verde-m)">formspree.io</a>
+      e cole abaixo o endpoint gerado.
+    </p>
+    <div class="campo">
+      <label>Endpoint Formspree</label>
+      <input type="url" id="cfg-endpoint" placeholder="https://formspree.io/f/xxxxxxx">
+    </div>
+    <div class="campo">
+      <label>Seu e-mail (referência no corpo da mensagem)</label>
+      <input type="email" id="cfg-email" placeholder="voce@exemplo.com">
+    </div>
+  </div>
+
+  <!-- Ações -->
+  <div class="acoes nao-imprimir">
+    <button class="btn btn-verde" onclick="gerarLink()">Gerar link para o paciente</button>
+    <button class="btn btn-outline btn-sm" onclick="exportarCfg()">Exportar config (.json)</button>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importar-file').click()">Importar config</button>
+    <input type="file" id="importar-file" accept=".json" style="display:none" onchange="importarCfg(event)">
+  </div>
+
+  <div id="link-gerado">
+    <strong>Link para enviar ao paciente:</strong>
+    <div id="link-url"></div>
+    <div class="acoes">
+      <button class="btn btn-verde btn-sm" onclick="copiarLink()">Copiar link</button>
+      <a id="link-abrir" href="#" target="_blank" class="btn btn-outline btn-sm" style="text-decoration:none">Testar (nova aba)</a>
+    </div>
+    <p style="font-size:12px;color:var(--texto-m);margin-top:10px;">
+      A configuração está codificada no próprio link — não há servidor. Não inclui dados pessoais do paciente.
+    </p>
+  </div>
+
+  <div id="fb-terapeuta"></div>
+
+  <!-- Preview -->
+  <div class="cartao" style="margin-top:24px;background:var(--verde-suave)">
+    <h2 style="margin-bottom:10px;">Pré-visualização</h2>
+    <div id="preview-terapeuta" style="font-size:13px;color:var(--texto-m)"></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ================================================
+     MODO CLIENTE (padrão e via link ?c=...)
+     ================================================ -->
+<div id="painel-cliente">
+
+  <!-- ─── TELA: FORMULÁRIO ─── -->
+  <div id="tela-form">
+  <div class="pagina">
+
+    <header class="topo">
+      <h1 id="cl-titulo">Roda da Vida</h1>
+      <div class="sub" id="cl-data"></div>
+    </header>
+
+    <div class="instrucoes-box" id="cl-instrucoes"></div>
+
+    <!-- Nome (opcional, para imprimir) -->
+    <div class="nome-box nao-imprimir">
+      <label for="inp-nome">Nome (opcional):</label>
+      <input type="text" id="inp-nome" placeholder="Identificação para o registro impresso">
+    </div>
+
+    <form id="form-roda" onsubmit="verRoda(event)" novalidate>
+
+      <!-- Progresso -->
+      <div class="contador-respondidas" id="div-progresso">
+        <span id="txt-progresso">0 de 8 áreas respondidas</span>
+        <div class="progresso-bar">
+          <div class="progresso-fill" id="fill-progresso" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Áreas geradas por JS -->
+      <div id="cl-areas"></div>
+
+      <!-- Pergunta reflexiva -->
+      <div class="reflexao-card oculto" id="cl-reflexao-bloco">
+        <label id="cl-reflexao-label">Observação final</label>
+        <textarea id="cl-reflexao" rows="3" placeholder="Escreva aqui sua observação..."></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-verde btn-gerar-roda nao-imprimir" id="btn-gerar" disabled>
+        Ver minha Roda da Vida
+      </button>
+    </form>
+
+  </div>
+  </div>
+
+  <!-- ─── TELA: RESULTADO ─── -->
+  <div id="tela-resultado" class="oculto">
+  <div class="pagina">
+
+    <header class="topo">
+      <h1 id="res-titulo">Roda da Vida</h1>
+      <div class="sub" id="res-data"></div>
+    </header>
+
+    <!-- Gráfico radar -->
+    <div class="grafico-container">
+      <canvas id="grafico-roda"></canvas>
+    </div>
+
+    <!-- Tabela de notas -->
+    <div class="tabela-notas">
+      <table>
+        <thead>
+          <tr>
+            <th>Área</th>
+            <th>Nível</th>
+            <th>Nota</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-notas"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2">Média geral</td>
+            <td id="td-media"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- Reflexão orientada ao paciente -->
+    <div class="reflexao-resultado">
+      <h3>Para refletir juntos</h3>
+      <p id="res-reflexao-texto">
+Observe as áreas com notas mais baixas — elas podem indicar onde há oportunidade de atenção e crescimento.
+Observe também as áreas com notas mais altas — são seus recursos e pontos de apoio.
+Como você se sente ao ver sua Roda? O que mais chama sua atenção?</p>
+    </div>
+
+    <!-- Observação do paciente -->
+    <div class="obs-paciente oculto" id="obs-bloco">
+      <h3>Sua observação</h3>
+      <p id="obs-texto"></p>
+    </div>
+
+    <div id="fb-envio"></div>
+
+    <div class="acoes nao-imprimir">
+      <button class="btn btn-ghost" onclick="reiniciar()">↺ Recomeçar</button>
+      <button class="btn btn-outline" onclick="window.print()">Imprimir / Salvar PDF</button>
+    </div>
+
+    <footer class="rodape">
+      Instrumento clínico de apoio à prática profissional. Não substitui avaliação diagnóstica.
+    </footer>
+
+  </div>
+  </div>
+
+</div><!-- /painel-cliente -->
+
+<!-- ================================================
+     JAVASCRIPT
+     ================================================ -->
+<script>
+/* ====================================================
+   CONFIGURAÇÃO PADRÃO  (Técnica 16 — Roda da Vida, TCC)
+   ==================================================== */
+const CFG_PADRAO = {
+  v: 2,
+  titulo: "Roda da Vida",
+  instrucoes: "Avalie, no momento atual, seu grau de satisfação em cada uma das áreas listadas abaixo, atribuindo uma nota de 0 a 10. O número 0 representa total insatisfação e o número 10 representa plena satisfação. Não há respostas certas ou erradas — o importante é a sua percepção honesta sobre como você se sente hoje em relação a cada área da sua vida.",
+  escala: { min: 0, max: 10, rotMin: "Totalmente insatisfeito", rotMax: "Plenamente satisfeito" },
+  reflexao: "Ao observar sua Roda da Vida, o que mais chama sua atenção? Há alguma área que você gostaria de comentar?",
+  endpoint: "",
+  emailTerapeuta: "",
+  areas: [
+    {
+      cor: "#3b82f6",
+      nome: "Saúde Física",
+      desc: "Considere sua saúde corporal, disposição, qualidade do sono, alimentação e prática de atividade física."
+    },
+    {
+      cor: "#8b5cf6",
+      nome: "Saúde Emocional",
+      desc: "Considere seu bem-estar psicológico, equilíbrio emocional e capacidade de lidar com as dificuldades do dia a dia."
+    },
+    {
+      cor: "#ec4899",
+      nome: "Família",
+      desc: "Considere a qualidade das suas relações com a família de origem e/ou a família que você constituiu."
+    },
+    {
+      cor: "#f43f5e",
+      nome: "Relacionamento Amoroso",
+      desc: "Considere sua vida afetiva, intimidade e satisfação no relacionamento amoroso ou em sua vida afetiva de modo geral."
+    },
+    {
+      cor: "#f59e0b",
+      nome: "Amizades e Vida Social",
+      desc: "Considere a qualidade e a frequência das suas relações de amizade, convivência social e conexão com outras pessoas."
+    },
+    {
+      cor: "#10b981",
+      nome: "Trabalho e Carreira",
+      desc: "Considere sua satisfação com o trabalho atual, realização profissional, propósito e perspectivas na carreira."
+    },
+    {
+      cor: "#06b6d4",
+      nome: "Finanças",
+      desc: "Considere sua situação financeira, segurança econômica e capacidade de realizar seus planos e necessidades materiais."
+    },
+    {
+      cor: "#6366f1",
+      nome: "Lazer e Desenvolvimento Pessoal",
+      desc: "Considere o espaço que você dedica ao lazer, hobbies, aprendizado, espiritualidade e crescimento pessoal."
+    }
+  ]
+};
+
+/* ====================================================
+   ESTADO GLOBAL
+   ==================================================== */
+let cfg = null;           // configuração ativa
+let respostas = [];       // notas do cliente (array de inteiros)
+let estadoAreas = [];     // cópia editável das áreas no painel terapeuta
+
+/* ====================================================
+   UTILITÁRIOS BASE64
+   ==================================================== */
+function enc(str) { return btoa(unescape(encodeURIComponent(str))); }
+function dec(str) { return decodeURIComponent(escape(atob(str))); }
+
+function lerConfigURL() {
+  const p = new URLSearchParams(window.location.search);
+  const c = p.get('c');
+  if (!c) return null;
+  try { return JSON.parse(dec(c)); } catch { return null; }
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+/* ====================================================
+   INICIALIZAÇÃO
+   ==================================================== */
+(function init() {
+  const params = new URLSearchParams(window.location.search);
+  const modoTerapeuta = params.has('terapeuta');
+  const cfgURL = lerConfigURL();
+
+  if (modoTerapeuta) {
+    // ── Modo terapeuta
+    cfg = JSON.parse(JSON.stringify(CFG_PADRAO));
+    estadoAreas = JSON.parse(JSON.stringify(cfg.areas));
+    document.getElementById('painel-terapeuta').classList.remove('oculto');
+    document.getElementById('painel-cliente').classList.add('oculto');
+    renderAreasCfg();
+    bindPreview();
+    atualizarPreview();
+  } else {
+    // ── Modo cliente (link direto ou URL customizada)
+    cfg = cfgURL && Array.isArray(cfgURL.areas) ? cfgURL : JSON.parse(JSON.stringify(CFG_PADRAO));
+    respostas = new Array(cfg.areas.length).fill(null);
+    montarFormulario();
+    document.getElementById('tela-form').classList.remove('oculto');
+  }
+})();
+
+/* ====================================================
+   MODO CLIENTE — FORMULÁRIO
+   ==================================================== */
+function montarFormulario() {
+  const agora = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+  document.getElementById('cl-titulo').textContent   = cfg.titulo;
+  document.getElementById('cl-data').textContent     = agora;
+  document.title = cfg.titulo;
+
+  document.getElementById('cl-instrucoes').textContent = cfg.instrucoes;
+
+  // Pergunta reflexiva
+  if (cfg.reflexao && cfg.reflexao.trim()) {
+    document.getElementById('cl-reflexao-label').textContent = cfg.reflexao;
+    document.getElementById('cl-reflexao-bloco').classList.remove('oculto');
+  }
+
+  // Progresso
+  document.getElementById('txt-progresso').textContent =
+    `0 de ${cfg.areas.length} áreas respondidas`;
+
+  // Área cards
+  const container = document.getElementById('cl-areas');
+  container.innerHTML = '';
+
+  cfg.areas.forEach((area, i) => {
+    const { min, max } = cfg.escala;
+    const card = document.createElement('div');
+    card.className = 'area-card';
+    card.id = `card-${i}`;
+
+    // Botões numéricos
+    let botoesHTML = '<div class="escala-grade">';
+    for (let v = min; v <= max; v++) {
+      botoesHTML += `<button type="button" class="num-btn" id="btn-${i}-${v}"
+        data-area="${i}" data-val="${v}"
+        onclick="selecionarNota(${i}, ${v})">${v}</button>`;
+    }
+    botoesHTML += '</div>';
+
+    card.innerHTML = `
+      <div class="area-header">
+        <div class="area-icone" style="background:${area.cor}"></div>
+        <span class="area-nome">${esc(area.nome)}</span>
+      </div>
+      <p class="area-desc">${esc(area.desc)}</p>
+      ${botoesHTML}
+      <div class="escala-rotulos">
+        <span>${min} — ${esc(cfg.escala.rotMin)}</span>
+        <span>${esc(cfg.escala.rotMax)} — ${max}</span>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function selecionarNota(areaIdx, valor) {
+  const { min, max } = cfg.escala;
+  const area = cfg.areas[areaIdx];
+  respostas[areaIdx] = valor;
+
+  // Atualiza visual dos botões
+  for (let v = min; v <= max; v++) {
+    const btn = document.getElementById(`btn-${areaIdx}-${v}`);
+    if (!btn) continue;
+    if (v === valor) {
+      btn.classList.add('ativo');
+      btn.style.background  = area.cor;
+      btn.style.borderColor = area.cor;
+    } else {
+      btn.classList.remove('ativo');
+      btn.style.background  = '';
+      btn.style.borderColor = '';
+    }
+  }
+
+  // Marca card como respondido
+  const card = document.getElementById(`card-${areaIdx}`);
+  if (card) card.classList.add('respondida');
+
+  atualizarProgresso();
+}
+
+function atualizarProgresso() {
+  const total      = cfg.areas.length;
+  const respondidas = respostas.filter(v => v !== null).length;
+  const pct        = Math.round((respondidas / total) * 100);
+
+  document.getElementById('txt-progresso').textContent =
+    `${respondidas} de ${total} áreas respondidas`;
+  document.getElementById('fill-progresso').style.width = `${pct}%`;
+
+  document.getElementById('btn-gerar').disabled = (respondidas < total);
+}
+
+/* ====================================================
+   MODO CLIENTE — RESULTADO
+   ==================================================== */
+function verRoda(event) {
+  if (event) event.preventDefault();
+
+  // Valida todas respondidas
+  const incompleta = respostas.findIndex(v => v === null);
+  if (incompleta !== -1) {
+    const nome = cfg.areas[incompleta].nome;
+    alert(`Por favor, avalie todas as áreas antes de continuar.\nFaltou: "${nome}".`);
+    document.getElementById(`card-${incompleta}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  // Monta tela de resultado
+  const agora = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+  const nome  = document.getElementById('inp-nome')?.value?.trim();
+
+  document.getElementById('res-titulo').textContent = cfg.titulo;
+  document.getElementById('res-data').textContent   =
+    nome ? `${nome} — ${agora}` : agora;
+
+  renderTabela();
+  renderGrafico();
+
+  // Observação do paciente
+  const obs = document.getElementById('cl-reflexao')?.value?.trim();
+  if (obs) {
+    document.getElementById('obs-bloco').classList.remove('oculto');
+    document.getElementById('obs-texto').textContent = obs;
+  }
+
+  // Exibe resultado
+  document.getElementById('tela-form').classList.add('oculto');
+  document.getElementById('tela-resultado').classList.remove('oculto');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Envia por e-mail se configurado
+  enviarResultado({ nome, obs });
+}
+
+function renderTabela() {
+  const tbody  = document.getElementById('tbody-notas');
+  tbody.innerHTML = '';
+
+  let soma = 0;
+  const { min, max } = cfg.escala;
+  const range = max - min;
+
+  cfg.areas.forEach((area, i) => {
+    const nota = respostas[i];
+    soma += nota;
+    const pct   = range > 0 ? Math.round(((nota - min) / range) * 100) : 0;
+    const tr    = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <span class="dot-area" style="background:${area.cor}"></span>
+        ${esc(area.nome)}
+      </td>
+      <td>
+        <span class="barra-nivel"
+          style="width:${pct}px;max-width:120px;background:${area.cor};opacity:.5"></span>
+      </td>
+      <td>
+        <span class="pill" style="background:${area.cor}22;color:${area.cor}">${nota}</span>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const media = (soma / cfg.areas.length).toFixed(1);
+  document.getElementById('td-media').innerHTML =
+    `<span class="pill" style="background:var(--verde-bg);color:var(--verde)">${media}</span>`;
+}
+
+function renderGrafico() {
+  const ctx = document.getElementById('grafico-roda').getContext('2d');
+
+  // Destroi instância anterior se houver
+  if (window._chartRoda) { window._chartRoda.destroy(); }
+
+  window._chartRoda = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: cfg.areas.map(a => a.nome),
+      datasets: [{
+        label: 'Satisfação atual',
+        data: respostas,
+        backgroundColor: 'rgba(74,124,90,.20)',
+        borderColor: '#2f5d3f',
+        borderWidth: 2.5,
+        pointBackgroundColor: cfg.areas.map(a => a.cor),
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (c) => ` ${c.label}: ${c.parsed.r}`,
+          }
+        }
+      },
+      scales: {
+        r: {
+          min: cfg.escala.min,
+          max: cfg.escala.max,
+          ticks: {
+            stepSize: 2,
+            color: '#9ca3af',
+            font: { size: 11 },
+            backdropColor: 'transparent'
+          },
+          grid:        { color: '#d1d5db' },
+          angleLines:  { color: '#d1d5db' },
+          pointLabels: {
+            color: cfg.areas.map(a => a.cor),
+            font:  { size: 12, weight: '600' }
+          }
+        }
+      }
+    }
+  });
+}
+
+function enviarResultado({ nome, obs }) {
+  const fb = document.getElementById('fb-envio');
+  if (!cfg.endpoint) {
+    fb.innerHTML = `<div class="feedback ok">
+      Resultado gerado. Você pode salvar/imprimir como PDF usando o botão abaixo.
+    </div>`;
+    return;
+  }
+
+  const dataHora = new Date().toLocaleString('pt-BR');
+  const linhas   = cfg.areas.map((a, i) => `  - ${a.nome}: ${respostas[i]}`).join('\n');
+  const media    = (respostas.reduce((s,v)=>s+v,0) / respostas.length).toFixed(1);
+
+  const corpo = [
+    `Resultado: ${cfg.titulo}`,
+    `Data/hora: ${dataHora}`,
+    nome ? `Paciente: ${nome}` : '',
+    '',
+    'Notas por área:',
+    linhas,
+    '',
+    `Média geral: ${media}`,
+    '',
+    obs ? `Observação do paciente:\n${obs}` : '(Nenhuma observação registrada)'
+  ].filter(l => l !== undefined).join('\n');
+
+  const payload = {
+    instrumento: cfg.titulo,
+    dataHora,
+    paciente: nome || '(não informado)',
+    media,
+    respostas: cfg.areas.map((a,i) => ({ area: a.nome, nota: respostas[i] })),
+    reflexao: obs || '',
+    _mensagem: corpo,
+    _subject: `[${cfg.titulo}] ${nome ? nome + ' — ' : ''}${dataHora}`,
+  };
+  if (cfg.emailTerapeuta) payload._replyto = cfg.emailTerapeuta;
+
+  fb.innerHTML = `<div class="feedback ok">Enviando resultado...</div>`;
+
+  fetch(cfg.endpoint, {
+    method:  'POST',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    body:    JSON.stringify(payload),
+  })
+  .then(r => {
+    fb.innerHTML = r.ok
+      ? `<div class="feedback ok">Resultado enviado ao profissional. Você também pode salvar/imprimir esta página.</div>`
+      : `<div class="feedback err">Falha no envio automático. Salve/imprima esta página em PDF e envie ao profissional.</div>`;
+  })
+  .catch(() => {
+    fb.innerHTML = `<div class="feedback err">Sem conexão para envio automático. Salve/imprima esta página em PDF.</div>`;
+  });
+}
+
+function reiniciar() {
+  respostas = new Array(cfg.areas.length).fill(null);
+  // Reseta botões
+  cfg.areas.forEach((_, i) => {
+    const { min, max } = cfg.escala;
+    for (let v = min; v <= max; v++) {
+      const btn = document.getElementById(`btn-${i}-${v}`);
+      if (btn) {
+        btn.classList.remove('ativo');
+        btn.style.background  = '';
+        btn.style.borderColor = '';
+      }
+    }
+    const card = document.getElementById(`card-${i}`);
+    if (card) card.classList.remove('respondida');
+  });
+  if (document.getElementById('cl-reflexao'))
+    document.getElementById('cl-reflexao').value = '';
+  if (document.getElementById('inp-nome'))
+    document.getElementById('inp-nome').value = '';
+  atualizarProgresso();
+  document.getElementById('tela-resultado').classList.add('oculto');
+  document.getElementById('obs-bloco').classList.add('oculto');
+  document.getElementById('fb-envio').innerHTML = '';
+  document.getElementById('tela-form').classList.remove('oculto');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ====================================================
+   MODO TERAPEUTA — CONFIGURAÇÃO
+   ==================================================== */
+function renderAreasCfg() {
+  const container = document.getElementById('cfg-areas');
+  container.innerHTML = '';
+  estadoAreas.forEach((area, i) => {
+    const div = document.createElement('div');
+    div.className = 'area-cfg';
+    div.innerHTML = `
+      <div class="area-cfg-topo">
+        <span class="area-cfg-num">${i + 1}.</span>
+        <input type="color" value="${area.cor}" onchange="estadoAreas[${i}].cor=this.value; atualizarPreview()" title="Cor">
+        <input type="text" value="${esc(area.nome)}" maxlength="30"
+               oninput="estadoAreas[${i}].nome=this.value; atualizarPreview()" placeholder="Nome da área">
+        ${estadoAreas.length > 3
+          ? `<button class="btn btn-perigo" onclick="removerAreaCfg(${i})">✕</button>`
+          : ''}
+      </div>
+      <textarea rows="2" placeholder="Descrição / orientação para o paciente..."
+                oninput="estadoAreas[${i}].desc=this.value">${esc(area.desc || '')}</textarea>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function addAreaCfg() {
+  if (estadoAreas.length >= 12) { alert('Máximo de 12 áreas.'); return; }
+  const cores = ['#f87171','#fb923c','#facc15','#4ade80','#60a5fa','#a78bfa','#f472b6','#34d399'];
+  estadoAreas.push({
+    cor:  cores[estadoAreas.length % cores.length],
+    nome: `Área ${estadoAreas.length + 1}`,
+    desc: ''
+  });
+  renderAreasCfg();
+  atualizarPreview();
+}
+
+function removerAreaCfg(i) {
+  if (estadoAreas.length <= 3) return;
+  estadoAreas.splice(i, 1);
+  renderAreasCfg();
+  atualizarPreview();
+}
+
+function coletarCfg() {
+  return {
+    v: 2,
+    titulo:          document.getElementById('cfg-titulo').value.trim() || 'Roda da Vida',
+    instrucoes:      document.getElementById('cfg-instrucoes').value.trim(),
+    escala: {
+      min:    parseInt(document.getElementById('cfg-min').value)    || 0,
+      max:    parseInt(document.getElementById('cfg-max').value)    || 10,
+      rotMin: document.getElementById('cfg-rot-min').value.trim(),
+      rotMax: document.getElementById('cfg-rot-max').value.trim(),
+    },
+    areas:           estadoAreas.map(a => ({ ...a })),
+    reflexao:        document.getElementById('cfg-reflexao').value.trim(),
+    endpoint:        document.getElementById('cfg-endpoint').value.trim(),
+    emailTerapeuta:  document.getElementById('cfg-email').value.trim(),
+  };
+}
+
+function atualizarPreview() {
+  const c = coletarCfg();
+  document.getElementById('preview-terapeuta').innerHTML = `
+    <strong>${esc(c.titulo)}</strong>
+    <p style="margin:6px 0">${esc(c.instrucoes) || '(sem instruções)'}</p>
+    <p style="margin:4px 0">
+      <strong>${c.areas.length}</strong> áreas &nbsp;·&nbsp;
+      escala <strong>${c.escala.min}–${c.escala.max}</strong>
+      (${esc(c.escala.rotMin)} → ${esc(c.escala.rotMax)})
+    </p>
+    <p style="margin:4px 0;font-size:12px">
+      ${c.areas.map(a => `<span style="display:inline-block;margin:2px 4px 2px 0;
+        background:${a.cor}22;color:${a.cor};border:1px solid ${a.cor}55;
+        border-radius:99px;padding:1px 9px;font-weight:600">${esc(a.nome)}</span>`).join('')}
+    </p>
+  `;
+}
+
+function bindPreview() {
+  ['cfg-titulo','cfg-instrucoes','cfg-min','cfg-max','cfg-rot-min','cfg-rot-max','cfg-reflexao']
+    .forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', atualizarPreview);
+    });
+}
+
+function gerarLink() {
+  const c = coletarCfg();
+  if (c.areas.length < 2) {
+    mostrarFbTerapeuta('Configure pelo menos 2 áreas.', 'err'); return;
+  }
+  if (c.escala.max <= c.escala.min) {
+    mostrarFbTerapeuta('O valor máximo deve ser maior que o mínimo.', 'err'); return;
+  }
+
+  const base = window.location.origin + window.location.pathname;
+  const link = `${base}?c=${enc(JSON.stringify(c))}`;
+
+  document.getElementById('link-url').textContent   = link;
+  document.getElementById('link-abrir').href        = link;
+  document.getElementById('link-gerado').style.display = 'block';
+  mostrarFbTerapeuta('Link gerado com sucesso.', 'ok');
+}
+
+function copiarLink() {
+  const link = document.getElementById('link-url').textContent;
+  navigator.clipboard.writeText(link)
+    .then(()  => mostrarFbTerapeuta('Link copiado!', 'ok'))
+    .catch(()  => mostrarFbTerapeuta('Copie manualmente o link acima.', 'err'));
+}
+
+function mostrarFbTerapeuta(msg, tipo) {
+  const el = document.getElementById('fb-terapeuta');
+  el.innerHTML = `<div class="feedback ${tipo}">${msg}</div>`;
+  if (tipo === 'ok') setTimeout(() => { el.innerHTML = ''; }, 3500);
+}
+
+function exportarCfg() {
+  const c    = coletarCfg();
+  const blob = new Blob([JSON.stringify(c, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'roda-da-vida-config.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importarCfg(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const c = JSON.parse(e.target.result);
+      document.getElementById('cfg-titulo').value       = c.titulo      || '';
+      document.getElementById('cfg-instrucoes').value   = c.instrucoes  || '';
+      document.getElementById('cfg-min').value          = c.escala?.min ?? 0;
+      document.getElementById('cfg-max').value          = c.escala?.max ?? 10;
+      document.getElementById('cfg-rot-min').value      = c.escala?.rotMin || '';
+      document.getElementById('cfg-rot-max').value      = c.escala?.rotMax || '';
+      document.getElementById('cfg-reflexao').value     = c.reflexao    || '';
+      document.getElementById('cfg-endpoint').value     = c.endpoint    || '';
+      document.getElementById('cfg-email').value        = c.emailTerapeuta || '';
+      if (Array.isArray(c.areas) && c.areas.length) {
+        estadoAreas = c.areas.map(a => ({ cor: a.cor||'#6b7280', nome: a.nome||'', desc: a.desc||'' }));
+        renderAreasCfg();
+      }
+      atualizarPreview();
+      mostrarFbTerapeuta('Configuração importada.', 'ok');
+    } catch { mostrarFbTerapeuta('Arquivo inválido.', 'err'); }
+  };
+  reader.readAsText(file);
+}
+</script>
+</body>
+</html>
